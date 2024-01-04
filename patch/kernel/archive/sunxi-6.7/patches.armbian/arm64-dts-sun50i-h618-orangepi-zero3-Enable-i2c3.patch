@@ -22,7 +22,7 @@ index c95eddbd5d35..81b654804279 100644
 +        pinctrl-names = "default";
 +        pinctrl-0 = <&i2c3_ph_pins>;
 +        status = "okay";
-+}
++};
 +
  &pio {
  	vcc-pc-supply = <&reg_dldo1>;
