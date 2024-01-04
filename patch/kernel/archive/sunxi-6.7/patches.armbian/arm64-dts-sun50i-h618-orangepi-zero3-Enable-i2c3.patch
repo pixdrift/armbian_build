@@ -21,7 +21,7 @@ index c95eddbd5d35..81b654804279 100644
 +&i2c3 {
 +        pinctrl-names = "default";
 +        pinctrl-0 = <&i2c3_ph_pins>;
-+        status = “okay”;
++        status = "okay";
 +}
 +
  &pio {
