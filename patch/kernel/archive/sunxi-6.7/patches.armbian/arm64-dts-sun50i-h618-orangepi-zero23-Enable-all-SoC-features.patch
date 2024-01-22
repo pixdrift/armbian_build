@@ -119,7 +119,7 @@ index 5b950b612ce3..817022d67d7a 100644
  			/omit-if-no-ref/
  			spi1_cs0_pin: spi1-cs0-pin {
 -				pins = "PH5";
-+			    pins = "PH9";
++			    	pins = "PH9";
  				function = "spi1";
  			};
 
