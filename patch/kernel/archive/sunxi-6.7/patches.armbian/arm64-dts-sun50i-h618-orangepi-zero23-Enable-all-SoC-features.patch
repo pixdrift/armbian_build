@@ -1,0 +1,184 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: pixdrift <devnull@pixeldrift.net>
+Date: Mon, 22 Jan 2024 11:18:36 +0000
+Subject: Patching kernel sunxi64 configuration to standardise orange pi zero2
+ and zero3 devices
+
+Signed-off-by: pixdrift <devnull@pixeldrift.net>
+---
+ arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi | 38 +++++++++-
+ arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi               | 13 +++-
+ 2 files changed, 47 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi
+index ce3dc6d9cd66..f1e1d68d8bd8 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi
+@@ -103,10 +103,14 @@ wifi_pwrseq: wifi-pwrseq {
+
+ &de {
+ 	status = "okay";
+ };
+
++&ehci0 {
++	status = "okay";
++};
++
+ &ehci1 {
+ 	status = "okay";
+ };
+
+ /* USB 2 & 3 are on headers only. */
+@@ -133,10 +137,18 @@ &hdmi_out {
+ 	hdmi_out_con: endpoint {
+ 		remote-endpoint = <&hdmi_con_in>;
+ 	};
+ };
+
++&i2c3 {
++        status = "okay";
++};
++
++&ir {
++        status = "okay";
++};
++
+ &mdio0 {
+ 	ext_rgmii_phy: ethernet-phy@1 {
+ 		compatible = "ethernet-phy-ieee802.3-c22";
+ 		reg = <1>;
+ 	};
+@@ -156,10 +168,14 @@ &mmc1 {
+ 	non-removable;
+ 	mmc-ddr-1_8v;
+ 	status = "okay";
+ };
+
++&ohci0 {
++	status = "okay";
++};
++
+ &ohci1 {
+ 	status = "okay";
+ };
+
+ &ohci2 {
+@@ -168,11 +184,11 @@ &ohci2 {
+
+ &ohci3 {
+ 	status = "okay";
+ };
+
+-&spi0  {
++&spi0 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&spi0_pins>, <&spi0_cs0_pin>;
+
+ 	flash@0 {
+@@ -182,13 +198,29 @@ flash@0 {
+ 		reg = <0>;
+ 		spi-max-frequency = <40000000>;
+ 	};
+ };
+
+-&uart0 {
++&spi1 {
++	status = "okay";
++	#address-cells = <0x01>;
++	#size-cells = <0x00>;
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&uart0_ph_pins>;
++	pinctrl-0 = <&spi1_pins &spi1_cs0_pin>;
++
++	spidev@0 {
++		compatible = "rohm,dh2228fv";
++		reg = <0x00>;
++		spi-max-frequency = <0xf4240>;
++	};
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart5 {
+ 	status = "okay";
+ };
+
+ &usbotg {
+ 	/*
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
+index 5b950b612ce3..817022d67d7a 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
+@@ -368,11 +368,11 @@ spi1_pins: spi1-pins {
+ 				function = "spi1";
+ 			};
+
+ 			/omit-if-no-ref/
+ 			spi1_cs0_pin: spi1-cs0-pin {
+-				pins = "PH5";
++			    pins = "PH9";
+ 				function = "spi1";
+ 			};
+
+ 			uart0_ph_pins: uart0-ph-pins {
+ 				pins = "PH0", "PH1";
+@@ -388,10 +388,15 @@ uart1_pins: uart1-pins {
+ 			/omit-if-no-ref/
+ 			uart1_rts_cts_pins: uart1-rts-cts-pins {
+ 				pins = "PG8", "PG9";
+ 				function = "uart1";
+ 			};
++
++		    uart5_ph_pins: uart5-ph-pins {
++			    pins = "PH2", "PH3";
++				function = "uart5";
++			};
+ 		};
+
+ 		gic: interrupt-controller@3021000 {
+ 			compatible = "arm,gic-400";
+ 			reg = <0x03021000 0x1000>,
+@@ -472,10 +477,12 @@ uart0: serial@5000000 {
+ 			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
+ 			reg-shift = <2>;
+ 			reg-io-width = <4>;
+ 			clocks = <&ccu CLK_BUS_UART0>;
+ 			resets = <&ccu RST_BUS_UART0>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&uart0_ph_pins>;
+ 			status = "disabled";
+ 		};
+
+ 		uart1: serial@5000400 {
+ 			compatible = "snps,dw-apb-uart";
+@@ -527,10 +534,12 @@ uart5: serial@5001400 {
+ 			interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+ 			reg-shift = <2>;
+ 			reg-io-width = <4>;
+ 			clocks = <&ccu CLK_BUS_UART5>;
+ 			resets = <&ccu RST_BUS_UART5>;
++		    pinctrl-names = "default";
++			pinctrl-0 = <&uart5_ph_pins>;
+ 			status = "disabled";
+ 		};
+
+ 		i2c0: i2c@5002000 {
+ 			compatible = "allwinner,sun50i-h616-i2c",
+@@ -579,10 +588,12 @@ i2c3: i2c@5002c00 {
+ 				     "allwinner,sun6i-a31-i2c";
+ 			reg = <0x05002c00 0x400>;
+ 			interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&ccu CLK_BUS_I2C3>;
+ 			resets = <&ccu RST_BUS_I2C3>;
++           pinctrl-names = "default";
++           pinctrl-0 = <&i2c3_pins>
+ 			status = "disabled";
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 		};
+
+--
+Created with Armbian build tools https://github.com/armbian/build
