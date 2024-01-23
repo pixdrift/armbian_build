@@ -1,0 +1,8 @@
+# Allwinner H618 quad core 2/4GB RAM SoC WiFi6 SPI USB-C
+BOARD_NAME="LonganPi 3H"
+BOARDFAMILY="sun50iw9"
+BOARD_MAINTAINER="pixdrift"
+BOOTCONFIG="longanpi_3h_defconfig"
+BOOT_LOGO="desktop"
+KERNEL_TARGET="current,edge"
+FORCE_BOOTSCRIPT_UPDATE="yes"
