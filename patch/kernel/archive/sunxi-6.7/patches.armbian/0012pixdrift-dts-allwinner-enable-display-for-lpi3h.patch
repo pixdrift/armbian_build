@@ -1,0 +1,72 @@
+From 978d832858eb1e16c01023dc11304eefd0795de3 Mon Sep 17 00:00:00 2001
+From: Jisheng Zhang <jszhang@kernel.org>
+Date: Fri, 10 Nov 2023 10:57:09 +0800
+Subject: [PATCH 12/29] dts: allwinner: enable display for lpi3h
+Modified by pixdrift for armbian build
+---
+ .../dts/allwinner/sun50i-h618-longanpi-3h.dts |  35 +++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h618-longanpi-3h.dts b/arch/arm64/boot/dts/allwinner/sun50i-h618-longanpi-3h.dts
+index 245583881549..f4e8391efffe 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h618-longanpi-3h.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h618-longanpi-3h.dts
+@@ -24,6 +24,27 @@ chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
+ 
++	reserved-memory {
++		linux,cma {
++			compatible = "shared-dma-pool";
++			reusable;
++			alloc-ranges = <0x0 0x40000000 0x0 0xffffffff>;
++			size = <0x0 0x8000000>;
++			linux,cma-default;
++		};
++	};
++
++	hdmi_connector: connector {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi_con_in: endpoint {
++				remote-endpoint = <&hdmi_out_con>;
++			};
++		};
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+@@ -58,6 +79,10 @@ &axp313 {
+ 	vin3-supply = <&reg_vcc5v>;
+ };
+ 
++&de {
++	status = "okay";
++};
++
+ &ehci1 {
+ 	status = "okay";
+ };
+@@ -93,6 +118,16 @@ &emac0 {
+ 	status = "okay";
+ };
+ 
++&hdmi {
++	status = "okay";
++};
++
++&hdmi_out {
++	hdmi_out_con: endpoint {
++		remote-endpoint = <&hdmi_con_in>;
++	};
++};
++
+ &mdio0 {
+ 	ext_rgmii_phy: ethernet-phy@1 {
+ 		compatible = "ethernet-phy-ieee802.3-c22";
+-- 
+2.34.1
+
