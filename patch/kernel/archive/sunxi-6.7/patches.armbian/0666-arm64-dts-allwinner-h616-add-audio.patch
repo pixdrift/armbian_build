@@ -1,0 +1,224 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: John Doe <john.doe@somewhere.on.planet>
+Date: Sat, 10 Feb 2024 03:35:42 +0000
+Subject: Patching kernel sunxi64 files
+ arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi
+ arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
+
+Signed-off-by: John Doe <john.doe@somewhere.on.planet>
+---
+ arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi |  22 ++
+ arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi               | 123 ++++++++++
+ 2 files changed, 145 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi
+index ce3dc6d9cd66..a33db5105d4d 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h616-orangepi-zero.dtsi
+@@ -103,10 +103,32 @@ wifi_pwrseq: wifi-pwrseq {
+ 
+ &de {
+ 	status = "okay";
+ };
+ 
++&codec {
++	allwinner,audio-routing =
++	        "Line Out", "LINEOUT";
++	status = "okay";
++};
++
++&ahub_dam_plat {
++	status = "okay";
++};
++
++&ahub_dam_mach {
++	status = "okay";
++};
++
++&ahub1_plat {
++	status = "okay";
++};
++
++&ahub1_mach {
++	status = "okay";
++};
++
+ &ehci1 {
+ 	status = "okay";
+ };
+ 
+ /* USB 2 & 3 are on headers only. */
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
+index 5b950b612ce3..c35d90292181 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-h616.dtsi
+@@ -182,10 +182,21 @@ gpu: gpu@1800000 {
+ 			clock-names = "core", "bus";
+ 			resets = <&ccu RST_BUS_GPU>;
+ 			status = "disabled";
+ 		};
+ 
++		deinterlace: deinterlace@1420000 {
++			compatible = "allwinner,sun50i-h6-deinterlace";
++			reg = <0x01420000 0x40000>;
++			clocks = <&ccu CLK_BUS_DEINTERLACE>,
++				 <&ccu CLK_DEINTERLACE>,
++				 <&ccu CLK_MBUS_VE>;
++			clock-names = "bus", "mod", "ram";
++			resets = <&ccu RST_BUS_DEINTERLACE>;
++			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
++		};
++
+ 		video-codec@1c0e000 {
+ 			compatible = "allwinner,sun50i-h616-video-engine";
+ 			reg = <0x01c0e000 0x2000>;
+ 			clocks = <&ccu CLK_BUS_VE>, <&ccu CLK_VE>,
+ 				 <&ccu CLK_MBUS_VE>;
+@@ -388,10 +399,15 @@ uart1_pins: uart1-pins {
+ 			/omit-if-no-ref/
+ 			uart1_rts_cts_pins: uart1-rts-cts-pins {
+ 				pins = "PG8", "PG9";
+ 				function = "uart1";
+ 			};
++
++			clk_losc: clk-losc {
++				pins = "PG10";
++				function = "clock";
++			};
+ 		};
+ 
+ 		gic: interrupt-controller@3021000 {
+ 			compatible = "arm,gic-400";
+ 			reg = <0x03021000 0x1000>,
+@@ -401,10 +417,21 @@ gic: interrupt-controller@3021000 {
+ 			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+ 			interrupt-controller;
+ 			#interrupt-cells = <3>;
+ 		};
+ 
++                iommu: iommu@30f0000 {
++                        compatible = "allwinner,sun50i-h616-iommu",
++                                     "allwinner,sun50i-h6-iommu";
++                        reg = <0x030f0000 0x10000>;
++                        interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
++                        clocks = <&ccu CLK_BUS_IOMMU>;
++                        resets = <&ccu RST_BUS_IOMMU>;
++                        #iommu-cells = <1>;
++                        status = "okay";
++                };
++
+ 		mmc0: mmc@4020000 {
+ 			compatible = "allwinner,sun50i-h616-mmc",
+ 				     "allwinner,sun50i-a100-mmc";
+ 			reg = <0x04020000 0x1000>;
+ 			clocks = <&ccu CLK_BUS_MMC0>, <&ccu CLK_MMC0>;
+@@ -464,10 +491,106 @@ mmc2: mmc@4022000 {
+ 			cap-sdio-irq;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 		};
+ 
++
++		dma: dma-controller@3002000 {
++			compatible = "allwinner,sun50i-h616-dma";
++			reg = <0x03002000 0x1000>;
++			interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_DMA>, <&ccu CLK_MBUS_DMA>;
++			clock-names = "bus", "mbus";
++			dma-channels = <16>;
++			dma-requests = <49>;
++			resets = <&ccu RST_BUS_DMA>;
++			#dma-cells = <1>;
++		};
++
++		codec: codec@05096000 {
++			#sound-dai-cells = <0>;
++			compatible = "allwinner,sun50i-h616-codec";
++			reg = <0x05096000 0x31c>;
++			interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&ccu CLK_BUS_AUDIO_CODEC>,
++				 <&ccu CLK_AUDIO_CODEC_1X>,
++				 <&ccu CLK_AUDIO_CODEC_4X>;
++			clock-names = "apb", "audio-codec-1x", "audio-codec-4x";
++			resets = <&ccu RST_BUS_AUDIO_CODEC>;
++			dmas = <&dma 6>;
++			dma-names = "tx";
++			status = "disabled";
++		};
++
++		ahub_dam_plat:ahub_dam_plat@5097000 {
++			#sound-dai-cells = <0>;
++			/* sound card without pcm for hardware mix setting */
++			compatible	= "allwinner,sunxi-snd-plat-ahub_dam";
++			reg		= <0x05097000 0x1000>;
++			resets		= <&ccu RST_BUS_AUDIO_HUB>;
++			clocks          = <&ccu CLK_AUDIO_CODEC_1X>,
++			                  <&ccu CLK_AUDIO_CODEC_4X>,
++			                  <&ccu CLK_AUDIO_HUB>,
++			                  <&ccu CLK_BUS_AUDIO_HUB>;
++			clock-names     = "clk_pll_audio",
++			                  "clk_pll_audio_4x",
++			                  "clk_audio_hub",
++			                  "clk_bus_audio_hub";
++			status		= "disabled";
++		};
++
++		ahub_dam_mach:ahub_dam_mach {
++			compatible = "allwinner,sunxi-snd-mach";
++			soundcard-mach,name = "ahubdam";
++			status		= "disabled";
++			soundcard-mach,cpu {
++				sound-dai = <&ahub_dam_plat>;
++			};
++			soundcard-mach,codec {
++			};
++		};
++
++		ahub1_plat:ahub1_plat {
++			#sound-dai-cells = <0>;
++			compatible	= "allwinner,sunxi-snd-plat-ahub";
++			apb_num		= <1>;	/* for dma port 4 */
++			dmas		= <&dma 4>, <&dma 4>;
++			dma-names	= "tx", "rx";
++			playback_cma	= <128>;
++			capture_cma	= <128>;
++			tx_fifo_size	= <128>;
++			rx_fifo_size	= <128>;
++
++			tdm_num		= <1>;
++			tx_pin		= <0>;
++			rx_pin		= <0>;
++			status		= "disabled";
++		};
++
++		ahub1_mach:ahub1_mach {
++			compatible = "allwinner,sunxi-snd-mach";
++			soundcard-mach,name = "HDMI";
++
++			soundcard-mach,format		= "i2s";
++			soundcard-mach,frame-master	= <&ahub1_cpu>;
++			soundcard-mach,bitclock-master	= <&ahub1_cpu>;
++			/* soundcard-mach,frame-inversion; */
++			/* soundcard-mach,bitclock-inversion; */
++			soundcard-mach,slot-num		= <2>;
++			soundcard-mach,slot-width	= <32>;
++			status		= "disabled";
++			ahub1_cpu: soundcard-mach,cpu {
++				sound-dai = <&ahub1_plat>;
++				soundcard-mach,pll-fs	= <4>;
++				soundcard-mach,mclk-fs	= <0>;
++			};
++
++			ahub1_codec: soundcard-mach,codec {
++				sound-dai = <&hdmi>;
++			};
++		};
++
+ 		uart0: serial@5000000 {
+ 			compatible = "snps,dw-apb-uart";
+ 			reg = <0x05000000 0x400>;
+ 			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
+ 			reg-shift = <2>;
+-- 
+Created with Armbian build tools https://github.com/armbian/build
+

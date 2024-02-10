@@ -198,3 +198,4 @@
 	patches.armbian/0609-sound-soc-add-sunxi_v2-for-h616-ahub.patch
 	patches.armbian/0617-sound-soc-sunxi-add-spdif-spdif.patch
 	patches.armbian/0618-sound-soc-sunxi-hack-to-fix-oops-on-cards-caps-query.patch
+	patches.armbian/0666-arm64-dts-allwinner-h616-add-audio.patch
